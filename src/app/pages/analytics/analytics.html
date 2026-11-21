@@ -1,0 +1,108 @@
+<div class="analytics-page">
+  <div class="page-header">
+    <div>
+      <h1>Аналитика расходов</h1>
+      <p>Структура трат по категориям и сравнение доходов с расходами</p>
+    </div>
+
+    <div class="filters-row">
+      <select [(ngModel)]="selectedAccountId" (ngModelChange)="recalculate()">
+        <option value="all">Все счета</option>
+        @for (acc of accounts; track acc.id) {
+          <option [value]="acc.id">
+            {{ acc.name }} {{ isAccountFrozen(acc.id) ? '(Заморожен)' : '' }}
+          </option>
+        }
+      </select>
+
+      <select [(ngModel)]="selectedDays" (ngModelChange)="recalculate()">
+        <option value="7">За последние 7 дней</option>
+        <option value="30">За последние 30 дней</option>
+        <option value="all">За всё время</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Сводные KPI-карточки -->
+  <div class="kpi-grid">
+    <div class="card-box kpi-card">
+      <span class="kpi-label">Поступления</span>
+      <div class="kpi-value income">+{{ totalIncome | number:'1.2-2' }} ₽</div>
+    </div>
+
+    <div class="card-box kpi-card">
+      <span class="kpi-label">Расходы и переводы</span>
+      <div class="kpi-value expense">−{{ totalExpense | number:'1.2-2' }} ₽</div>
+    </div>
+
+    <div class="card-box kpi-card">
+      <span class="kpi-label">Финансовый итог</span>
+      <div
+        class="kpi-value"
+        [class.income]="totalIncome - totalExpense >= 0"
+        [class.expense]="totalIncome - totalExpense < 0"
+      >
+        {{ totalIncome - totalExpense >= 0 ? '+' : '' }}{{ (totalIncome - totalExpense) | number:'1.2-2' }} ₽
+      </div>
+    </div>
+
+    <div class="card-box kpi-card">
+      <span class="kpi-label">Крупнейшая категория</span>
+      <div class="kpi-value small">
+        {{ categoryStats.length > 0 ? categoryStats[0].category : 'Нет трат' }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Графики -->
+  <div class="charts-grid">
+    <section class="card-box chart-card">
+      <h2>Расходы по категориям</h2>
+      <div class="canvas-wrapper" [hidden]="categoryStats.length === 0">
+        <canvas #doughnutCanvas></canvas>
+      </div>
+      @if (categoryStats.length === 0) {
+        <div class="empty-chart">За выбранный период расходов не найдено</div>
+      }
+    </section>
+
+    <section class="card-box chart-card">
+      <h2>Доходы и расходы</h2>
+      <div class="canvas-wrapper">
+        <canvas #barCanvas></canvas>
+      </div>
+    </section>
+  </div>
+
+  <!-- Детализация по категориям -->
+  <section class="card-box">
+    <h2 class="section-title">Детализация по категориям</h2>
+    @if (categoryStats.length > 0) {
+      <div class="cat-list">
+        @for (item of categoryStats; track item.category) {
+          <div class="cat-item">
+            <div class="cat-header">
+              <div class="cat-name">
+                <span class="dot" [style.background]="item.color"></span>
+                <strong>{{ item.category }}</strong>
+              </div>
+              <div class="cat-numbers">
+                <span class="cat-percent">{{ item.percent }}%</span>
+                <strong>{{ item.amount | number:'1.2-2' }} ₽</strong>
+              </div>
+            </div>
+            <div class="progress-track">
+              <div
+                class="progress-fill"
+                [style.width.%]="item.percent"
+                [style.background]="item.color"
+              ></div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <p class="empty-text">Нет данных для отображения.</p>
+    }
+  </section>
+</div>

@@ -1,0 +1,340 @@
+.accounts-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.hero-balance {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%);
+
+  .hero-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .hero-amount {
+    font-size: 34px;
+    font-weight: 700;
+    margin: 6px 0 4px;
+    color: var(--text-primary);
+  }
+
+  .hero-sub {
+    font-size: 13px;
+    color: var(--success);
+    font-weight: 500;
+
+    &.frozen {
+      color: var(--danger);
+      font-weight: 600;
+    }
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 16px;
+
+  h2 {
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .section-hint {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .link-all {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    text-decoration: none;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.bank-card-wrapper {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.visual-card {
+  border-radius: 16px;
+  padding: 20px;
+  color: #fff;
+  min-height: 190px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  transition: filter 0.25s ease, opacity 0.25s ease;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.22);
+
+  &.blocked {
+    filter: grayscale(0.85);
+    opacity: 0.8;
+  }
+
+  .visual-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    .card-name {
+      font-size: 14px;
+      font-weight: 600;
+      opacity: 0.95;
+    }
+    .card-system {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+    }
+  }
+
+  .card-chip {
+    width: 40px;
+    height: 28px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #fde68a 0%, #d97706 100%);
+    opacity: 0.9;
+  }
+
+  .visual-card-number {
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .visual-card-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-size: 13px;
+
+    small {
+      display: block;
+      font-size: 10px;
+      opacity: 0.7;
+      text-transform: uppercase;
+    }
+
+    .status-pill {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+
+      &.status-blocked {
+        background: rgba(220, 38, 38, 0.85);
+      }
+    }
+  }
+}
+
+.linked-account-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 13px;
+
+  .linked-label {
+    color: var(--text-secondary);
+    strong {
+      color: var(--text-primary);
+    }
+  }
+
+  .linked-balance {
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+
+    small {
+      font-weight: 500;
+      font-size: 11px;
+    }
+  }
+}
+
+.frozen-box {
+  background: #fef2f2 !important;
+  border-color: #fecaca !important;
+}
+
+.frozen-text {
+  color: var(--danger) !important;
+}
+
+.card-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+
+  .btn-sm {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}
+
+.two-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 20px;
+}
+
+.accounts-list, .tx-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.account-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+
+  .account-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+  }
+
+  .account-number {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-family: monospace;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .copy-btn {
+    border: none;
+    background: transparent;
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .linked-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+
+    .card-tag {
+      font-size: 11px;
+      font-weight: 600;
+      background: #eef2ff;
+      color: var(--accent);
+      padding: 3px 8px;
+      border-radius: 6px;
+
+      &.card-tag-blocked {
+        background: var(--danger-bg);
+        color: var(--danger);
+      }
+    }
+
+    .no-cards {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+  }
+
+  .account-balance-col {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .account-balance {
+    font-size: 17px;
+    font-weight: 700;
+  }
+
+  .frozen-sub {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-decoration: line-through;
+  }
+}
+
+.tx-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f5f9;
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .tx-title {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .tx-meta {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+
+  .tx-amount {
+    font-size: 15px;
+    font-weight: 700;
+    white-space: nowrap;
+
+    &.income {
+      color: var(--success);
+    }
+  }
+}

@@ -1,0 +1,163 @@
+.analytics-page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+
+  h1 {
+    font-size: 24px;
+    font-weight: 700;
+  }
+  p {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+}
+
+.filters-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+
+  select {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #fff;
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+}
+
+.kpi-card {
+  padding: 18px 20px;
+
+  .kpi-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+  }
+
+  .kpi-value {
+    font-size: 22px;
+    font-weight: 700;
+    margin-top: 6px;
+
+    &.income {
+      color: var(--success);
+    }
+    &.expense {
+      color: var(--text-primary);
+    }
+    &.small {
+      font-size: 18px;
+      color: var(--accent);
+    }
+  }
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 20px;
+}
+
+.chart-card {
+  h2 {
+    font-size: 17px;
+    margin-bottom: 16px;
+  }
+
+  .canvas-wrapper {
+    position: relative;
+    height: 290px;
+  }
+
+  .empty-chart {
+    height: 290px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+}
+
+.section-title {
+  font-size: 17px;
+  margin-bottom: 16px;
+}
+
+.cat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cat-item {
+  .cat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    font-size: 14px;
+  }
+
+  .cat-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+  }
+
+  .cat-numbers {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .cat-percent {
+      font-size: 12px;
+      color: var(--text-secondary);
+      background: #f1f5f9;
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+  }
+
+  .progress-track {
+    height: 8px;
+    background: #f1f5f9;
+    border-radius: 999px;
+    overflow: hidden;
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.35s ease;
+    }
+  }
+}
+
+.empty-text {
+  color: var(--text-secondary);
+  font-size: 14px;
+}

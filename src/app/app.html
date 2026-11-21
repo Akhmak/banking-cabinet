@@ -1,0 +1,58 @@
+<div class="layout">
+  <!-- Боковое меню -->
+  <aside class="sidebar" [class.open]="mobileMenuOpen">
+    <div class="brand">
+      <div class="brand-logo">N</div>
+      <div>
+        <div class="brand-name">NovaBank</div>
+        <div class="brand-tag">Личный кабинет</div>
+      </div>
+    </div>
+
+    <nav class="nav-menu">
+      <a routerLink="/accounts" routerLinkActive="active" (click)="closeMobileMenu()">
+        <span class="nav-icon">💳</span> Счета и карты
+      </a>
+      <a routerLink="/transfers" routerLinkActive="active" (click)="closeMobileMenu()">
+        <span class="nav-icon">⇄</span> Переводы и платежи
+      </a>
+      <a routerLink="/templates" routerLinkActive="active" (click)="closeMobileMenu()">
+        <span class="nav-icon">★</span> Шаблоны платежей
+      </a>
+      <a routerLink="/analytics" routerLinkActive="active" (click)="closeMobileMenu()">
+        <span class="nav-icon">◔</span> Аналитика расходов
+      </a>
+      <a routerLink="/history" routerLinkActive="active" (click)="closeMobileMenu()">
+        <span class="nav-icon">☰</span> История и выписка
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="demo-badge">Учебный мок-бэкенд</div>
+      <button type="button" class="reset-btn" (click)="resetDemo()">
+        ↺ Сбросить демо-данные
+      </button>
+    </div>
+  </aside>
+
+  <!-- Основная область -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <button type="button" class="burger-btn" (click)="toggleMobileMenu()">
+        ☰
+      </button>
+      <div class="topbar-title">Интернет-банк</div>
+      <div class="user-profile">
+        <div class="avatar">АС</div>
+        <div class="user-info">
+          <div class="user-name">Магомедов Ахмед</div>
+          <div class="user-status">Премиум-клиент</div>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

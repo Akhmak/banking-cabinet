@@ -1,0 +1,173 @@
+<div class="history-page">
+  <div class="page-header">
+    <div>
+      <h1>История операций и выписка</h1>
+      <p>Детальный поиск по операциям и формирование банковской выписки</p>
+    </div>
+    <button
+      type="button"
+      class="btn btn-primary"
+      [disabled]="filteredTransactions.length === 0"
+      (click)="exportCsv()"
+    >
+      ↓ Скачать выписку (CSV)
+    </button>
+  </div>
+
+  <!-- Панель фильтров -->
+  <section class="card-box filters-panel">
+    <div class="filters-grid">
+      <div class="filter-field search-field">
+        <label>Поиск</label>
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="applyFilters()"
+          placeholder="Название, получатель или комментарий..."
+        />
+      </div>
+
+      <div class="filter-field">
+        <label>Счёт</label>
+        <select [(ngModel)]="accountId" (ngModelChange)="applyFilters()">
+          <option value="all">Все счета</option>
+          @for (acc of accounts; track acc.id) {
+            <option [value]="acc.id">
+              {{ acc.name }} {{ isAccountFrozen(acc.id) ? '(Заморожен)' : '' }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="filter-field">
+        <label>Тип операции</label>
+        <select [(ngModel)]="txType" (ngModelChange)="applyFilters()">
+          <option value="all">Все типы</option>
+          <option value="income">Пополнения</option>
+          <option value="expense">Оплаты</option>
+          <option value="transfer">Переводы</option>
+        </select>
+      </div>
+
+      <div class="filter-field">
+        <label>Категория</label>
+        <select [(ngModel)]="category" (ngModelChange)="applyFilters()">
+          <option value="all">Все категории</option>
+          @for (cat of categories; track cat) {
+            <option [value]="cat">{{ cat }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="filter-field">
+        <label>Дата с</label>
+        <input type="date" [(ngModel)]="dateFrom" (ngModelChange)="applyFilters()" />
+      </div>
+
+      <div class="filter-field">
+        <label>Дата по</label>
+        <input type="date" [(ngModel)]="dateTo" (ngModelChange)="applyFilters()" />
+      </div>
+    </div>
+
+    <div class="filters-footer">
+      <div class="summary-chips">
+        <span>Найдено операций: <strong>{{ filteredTransactions.length }}</strong></span>
+        <span class="sep">•</span>
+        <span class="income">Приход: +{{ filteredIncome | number:'1.2-2' }} ₽</span>
+        <span class="sep">•</span>
+        <span>Расход: −{{ filteredExpense | number:'1.2-2' }} ₽</span>
+      </div>
+      <button type="button" class="btn btn-outline btn-sm" (click)="resetFilters()">
+        Сбросить фильтры
+      </button>
+    </div>
+  </section>
+
+  <!-- Таблица выписки -->
+  <section class="card-box table-card">
+    @if (filteredTransactions.length > 0) {
+      <div class="table-scroll">
+        <table class="tx-table">
+          <thead>
+          <tr>
+            <th>Дата и время</th>
+            <th>Операция / Контрагент</th>
+            <th>Счёт</th>
+            <th>Категория</th>
+            <th class="right">Сумма</th>
+            <th></th>
+          </tr>
+          </thead>
+          <tbody>
+            @for (tx of filteredTransactions; track tx.id) {
+              <tr>
+                <td class="muted nowrap">{{ tx.date | date:'dd.MM.yyyy HH:mm' }}</td>
+                <td>
+                  <div class="tx-main">{{ tx.title }}</div>
+                  <div class="tx-sub">{{ tx.recipientOrSender }}</div>
+                </td>
+                <td class="muted">{{ getAccountName(tx.accountId) }}</td>
+                <td>
+                  <span class="badge badge-neutral">{{ tx.category }}</span>
+                </td>
+                <td
+                  class="right amount-cell nowrap"
+                  [class.income]="tx.type === 'income'"
+                >
+                  {{ tx.type === 'income' ? '+' : '−' }}{{ tx.amount | number:'1.2-2' }} ₽
+                </td>
+                <td class="right">
+                  <button
+                    type="button"
+                    class="details-btn"
+                    (click)="selectedTx = tx"
+                  >
+                    Чек
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="empty-state">
+        По заданным фильтрам операций не найдено.
+      </div>
+    }
+  </section>
+
+  <!-- Модальное окно чека -->
+  @if (selectedTx) {
+    <div class="modal-backdrop" (click)="selectedTx = null">
+      <div class="modal-card card-box" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Детали операции</h3>
+          <button type="button" class="close-btn" (click)="selectedTx = null">✕</button>
+        </div>
+
+        <div class="modal-amount" [class.income]="selectedTx.type === 'income'">
+          {{ selectedTx.type === 'income' ? '+' : '−' }}{{ selectedTx.amount | number:'1.2-2' }} ₽
+        </div>
+
+        <div class="modal-rows">
+          <div><span>Номер операции:</span><strong>{{ selectedTx.id }}</strong></div>
+          <div><span>Дата:</span><strong>{{ selectedTx.date | date:'dd MMMM yyyy, HH:mm' }}</strong></div>
+          <div><span>Тип:</span><strong>{{ getTypeLabel(selectedTx.type) }}</strong></div>
+          <div><span>Счёт:</span><strong>{{ getAccountName(selectedTx.accountId) }}</strong></div>
+          <div><span>Контрагент:</span><strong>{{ selectedTx.recipientOrSender }}</strong></div>
+          <div><span>Категория:</span><strong>{{ selectedTx.category }}</strong></div>
+          @if (selectedTx.comment) {
+            <div><span>Комментарий:</span><strong>{{ selectedTx.comment }}</strong></div>
+          }
+          <div><span>Статус:</span><span class="badge badge-success">Исполнено</span></div>
+        </div>
+
+        <button type="button" class="btn btn-primary full-btn" (click)="selectedTx = null">
+          Закрыть
+        </button>
+      </div>
+    </div>
+  }
+</div>

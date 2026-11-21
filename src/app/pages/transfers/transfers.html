@@ -1,0 +1,328 @@
+<div class="transfers-page">
+  <div class="page-header">
+    <div>
+      <h1>Переводы и платежи</h1>
+      <p>Моментальные переводы со строгой проверкой реквизитов и SMS-подтверждением</p>
+    </div>
+    <a routerLink="/templates" class="btn btn-outline">Все шаблоны ({{ templates.length }})</a>
+  </div>
+
+  <!-- Быстрые шаблоны -->
+  @if (step === 1 && templates.length > 0) {
+    <div class="quick-templates">
+      <span class="qt-label">Быстрый выбор шаблона:</span>
+      @for (tpl of templates; track tpl.id) {
+        <button type="button" class="qt-chip" (click)="applyTemplate(tpl)">
+          ★ {{ tpl.name }} • {{ tpl.amount | number:'1.0-0' }} ₽
+        </button>
+      }
+    </div>
+  }
+
+  <!-- Индикатор шагов (Stepper) -->
+  <div class="stepper card-box">
+    <div class="step-item" [class.active]="step === 1" [class.done]="step > 1">
+      <span class="step-num">{{ step > 1 ? '✓' : '1' }}</span>
+      <span>Реквизиты</span>
+    </div>
+    <div class="step-line" [class.done]="step > 1"></div>
+    <div class="step-item" [class.active]="step === 2" [class.done]="step > 2">
+      <span class="step-num">{{ step > 2 ? '✓' : '2' }}</span>
+      <span>Подтверждение SMS</span>
+    </div>
+    <div class="step-line" [class.done]="step > 2"></div>
+    <div class="step-item" [class.active]="step === 3">
+      <span class="step-num">3</span>
+      <span>Квитанция</span>
+    </div>
+  </div>
+
+  <!-- ШАГ 1: Форма перевода -->
+  @if (step === 1) {
+    <form [formGroup]="transferForm" (ngSubmit)="goToConfirmation()" class="card-box transfer-card">
+      <div class="method-tabs">
+        <label class="method-tab" [class.active]="transferForm.value.transferMethod === 'card'">
+          <input type="radio" formControlName="transferMethod" value="card" />
+          По номеру карты
+        </label>
+        <label class="method-tab" [class.active]="transferForm.value.transferMethod === 'account'">
+          <input type="radio" formControlName="transferMethod" value="account" />
+          По номеру счёта
+        </label>
+        <label class="method-tab" [class.active]="transferForm.value.transferMethod === 'own'">
+          <input type="radio" formControlName="transferMethod" value="own" />
+          Между своими счетами
+        </label>
+      </div>
+
+      <div class="form-grid">
+        <!-- Счёт списания -->
+        <div class="form-group">
+          <label>Откуда списать</label>
+          <select formControlName="fromAccountId">
+            @for (acc of accounts; track acc.id) {
+              <option [value]="acc.id">
+                {{ acc.name }} ({{ isAccountFrozen(acc.id) ? 'Заморожен • 0,00 ₽' : (acc.balance | number:'1.2-2') + ' ₽' }})
+              </option>
+            }
+          </select>
+          @if (isAccountFrozen(transferForm.value.fromAccountId)) {
+            <div class="frozen-alert">
+              Счёт заморожен (карта заблокирована). Списание недоступно.
+              <a routerLink="/accounts">Разблокировать →</a>
+            </div>
+          }
+        </div>
+
+        <!-- Если перевод между своими счетами -->
+        @if (transferForm.value.transferMethod === 'own') {
+          <div class="form-group">
+            <label>Куда зачислить</label>
+            <select formControlName="toAccountId">
+              @for (acc of accounts; track acc.id) {
+                <option [value]="acc.id">
+                  {{ acc.name }} ({{ isAccountFrozen(acc.id) ? 'Заморожен' : (acc.balance | number:'1.2-2') + ' ₽' }})
+                </option>
+              }
+            </select>
+            @if (isAccountFrozen(transferForm.value.toAccountId)) {
+              <div class="frozen-alert">
+                Счёт заморожен (карта заблокирована). Зачисление недоступно.
+                <a routerLink="/accounts">Разблокировать →</a>
+              </div>
+            }
+            @if (transferForm.errors?.['sameAccount']) {
+              <div class="error-text">{{ transferForm.errors?.['sameAccount'] }}</div>
+            }
+          </div>
+        } @else {
+          <!-- Номер карты или счёта -->
+          <div class="form-group">
+            <div class="label-row">
+              <label>
+                {{ transferForm.value.transferMethod === 'card'
+                ? 'Карта получателя (16 цифр)'
+                : 'Счёт получателя (20 цифр)' }}
+              </label>
+              @if (transferForm.value.transferMethod === 'card') {
+                <button type="button" class="link-btn" (click)="fillTestCard()">
+                  Подставить тестовую карту
+                </button>
+              }
+            </div>
+            <input
+              type="text"
+              formControlName="recipientCardOrAccount"
+              [placeholder]="transferForm.value.transferMethod === 'card'
+                ? '4276 3800 1234 5679'
+                : '40817810099910001234'"
+            />
+            @if (getError('recipientCardOrAccount')) {
+              <div class="error-text">{{ getError('recipientCardOrAccount') }}</div>
+            }
+          </div>
+
+          <div class="form-group">
+            <label>Получатель (ФИО или организация)</label>
+            <input
+              type="text"
+              formControlName="recipientName"
+              placeholder="Например: Иван Петров"
+            />
+            @if (getError('recipientName')) {
+              <div class="error-text">{{ getError('recipientName') }}</div>
+            }
+          </div>
+        }
+
+        <!-- Сумма -->
+        <div class="form-group">
+          <label>Сумма перевода (₽)</label>
+          <input
+            type="text"
+            inputmode="decimal"
+            formControlName="amount"
+            (input)="onAmountInput($event)"
+            placeholder="0.00"
+          />
+          <div class="field-hint">
+            Доступно: {{ getSelectedBalance() | number:'1.2-2' }} ₽ • Лимит: 500 000 ₽
+          </div>
+          @if (getError('amount')) {
+            <div class="error-text">{{ getError('amount') }}</div>
+          }
+        </div>
+
+        <!-- Категория -->
+        <div class="form-group">
+          <label>Категория расхода</label>
+          <select formControlName="category">
+            @for (cat of categories; track cat) {
+              <option [value]="cat">{{ cat }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Комментарий -->
+        <div class="form-group full-width">
+          <label>Комментарий получателю (необязательно)</label>
+          <input
+            type="text"
+            formControlName="comment"
+            placeholder="Сообщение для получателя..."
+          />
+          @if (getError('comment')) {
+            <div class="error-text">{{ getError('comment') }}</div>
+          }
+        </div>
+      </div>
+
+      <!-- Сохранить как шаблон -->
+      @if (transferForm.value.transferMethod !== 'own') {
+        <div class="template-save-box">
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="saveAsTemplate" />
+            <span>Сохранить операцию как шаблон платежа</span>
+          </label>
+
+          @if (transferForm.value.saveAsTemplate) {
+            <div class="form-group mt-12">
+              <input
+                type="text"
+                formControlName="templateName"
+                placeholder="Название шаблона (например: Оплата аренды)"
+              />
+              @if (getError('templateName')) {
+                <div class="error-text">{{ getError('templateName') }}</div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      @if (serverError) {
+        <div class="alert-error">{{ serverError }}</div>
+      }
+
+      <div class="form-actions">
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="
+            isLoading ||
+            isAccountFrozen(transferForm.value.fromAccountId) ||
+            (transferForm.value.transferMethod === 'own' && isAccountFrozen(transferForm.value.toAccountId))
+          "
+        >
+          {{ isLoading ? 'Отправка SMS-кода...' : 'Продолжить к подтверждению →' }}
+        </button>
+      </div>
+    </form>
+  }
+
+  <!-- ШАГ 2: Проверка реквизитов и ввод SMS -->
+  @if (step === 2) {
+    <div class="card-box transfer-card confirm-card">
+      <h2>Проверьте детали перевода</h2>
+
+      <div class="summary-list">
+        <div class="summary-row">
+          <span>Счёт списания:</span>
+          <strong>{{ getSelectedAccount(transferForm.value.fromAccountId)?.name }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Получатель:</span>
+          <strong>
+            {{ transferForm.value.transferMethod === 'own'
+            ? getSelectedAccount(transferForm.value.toAccountId)?.name
+            : transferForm.value.recipientName }}
+          </strong>
+        </div>
+        @if (transferForm.value.transferMethod !== 'own') {
+          <div class="summary-row">
+            <span>Реквизиты:</span>
+            <strong class="mono">{{ transferForm.value.recipientCardOrAccount }}</strong>
+          </div>
+        }
+        <div class="summary-row">
+          <span>Комиссия банка:</span>
+          <strong class="text-success">0,00 ₽</strong>
+        </div>
+        <div class="summary-row total">
+          <span>Сумма к списанию:</span>
+          <strong>{{ numericAmount | number:'1.2-2' }} ₽</strong>
+        </div>
+      </div>
+
+      <form [formGroup]="smsForm" (ngSubmit)="confirmTransfer()" class="sms-box">
+        <label>Введите 4-значный код подтверждения из SMS</label>
+        <p class="sms-hint">
+          Демо-подсказка: на ваш телефон отправлен код <strong>{{ smsHint }}</strong>
+        </p>
+
+        <input
+          type="text"
+          maxlength="4"
+          formControlName="code"
+          placeholder="••••"
+          class="sms-input"
+        />
+
+        @if (smsForm.get('code')?.touched && smsForm.get('code')?.errors) {
+          <div class="error-text">Введите ровно 4 цифры кода подтверждения</div>
+        }
+
+        @if (serverError) {
+          <div class="alert-error">{{ serverError }}</div>
+        }
+
+        <div class="confirm-actions">
+          <button type="button" class="btn btn-outline" (click)="step = 1" [disabled]="isLoading">
+            ← Изменить данные
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+            {{ isLoading ? 'Выполнение перевода...' : 'Подтвердить и перевести' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- ШАГ 3: Квитанция -->
+  @if (step === 3 && completedTransaction) {
+    <div class="card-box receipt-card">
+      <div class="receipt-icon">✓</div>
+      <h2>Перевод успешно выполнен!</h2>
+      <div class="receipt-amount">
+        −{{ completedTransaction.amount | number:'1.2-2' }} ₽
+      </div>
+      <p class="receipt-meta">
+        Операция № {{ completedTransaction.id }} •
+        {{ completedTransaction.date | date:'dd.MM.yyyy HH:mm' }}
+      </p>
+
+      <div class="summary-list">
+        <div class="summary-row">
+          <span>Получатель:</span>
+          <strong>{{ completedTransaction.recipientOrSender }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Категория:</span>
+          <strong>{{ completedTransaction.category }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Статус:</span>
+          <span class="badge badge-success">Исполнено</span>
+        </div>
+      </div>
+
+      <div class="receipt-actions">
+        <button type="button" class="btn btn-primary" (click)="resetWizard()">
+          Сделать ещё перевод
+        </button>
+        <a routerLink="/accounts" class="btn btn-outline">К счетам и картам</a>
+        <a routerLink="/history" class="btn btn-secondary">Открыть выписку</a>
+      </div>
+    </div>
+  }
+</div>

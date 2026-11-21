@@ -1,0 +1,141 @@
+.templates-page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  h1 {
+    font-size: 24px;
+    font-weight: 700;
+  }
+  p {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+}
+
+.create-form {
+  h3 {
+    margin-bottom: 16px;
+    font-size: 17px;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    input, select {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+    }
+
+    .error-text {
+      font-size: 12px;
+      color: var(--danger);
+    }
+  }
+
+  .form-actions {
+    margin-top: 18px;
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+.templates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 18px;
+}
+
+.tpl-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .tpl-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .delete-icon {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+    border-radius: 6px;
+
+    &:hover {
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
+  }
+
+  .tpl-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  .tpl-recipient {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .tpl-target {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-family: monospace;
+  }
+
+  .tpl-comment {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-style: italic;
+  }
+
+  .tpl-footer {
+    margin-top: auto;
+    padding-top: 14px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .tpl-amount {
+      font-size: 18px;
+      font-weight: 700;
+    }
+  }
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 40px;
+}

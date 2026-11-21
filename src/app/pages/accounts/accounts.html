@@ -1,0 +1,192 @@
+@if (vm$ | async; as vm) {
+  <div class="accounts-page">
+    <!-- Сводный баланс -->
+    <section class="hero-balance card-box">
+      <div>
+        <span class="hero-label">Доступный баланс по активным счетам</span>
+        <h1 class="hero-amount">
+          {{ vm.availableBalance | number:'1.2-2' }} ₽
+        </h1>
+
+        @if (vm.frozenBalance > 0) {
+          <p class="hero-sub frozen">
+            Заморожено: {{ vm.frozenBalance | number:'1.2-2' }} ₽ • Всего средств: {{ vm.totalBalance | number:'1.2-2' }} ₽
+          </p>
+        } @else {
+          <p class="hero-sub">Все счета активны • Онлайн-обслуживание 24/7</p>
+        }
+      </div>
+
+      <div class="hero-actions">
+        <a routerLink="/transfers" class="btn btn-primary">Новый перевод</a>
+        <a routerLink="/analytics" class="btn btn-secondary">Аналитика расходов</a>
+        <a routerLink="/history" class="btn btn-outline">Выписка</a>
+      </div>
+    </section>
+
+    <!-- Банковские карты -->
+    <section class="section-block">
+      <div class="section-header">
+        <h2>Мои карты</h2>
+        <span class="section-hint">Управление лимитами и статусом</span>
+      </div>
+
+      <div class="cards-grid">
+        @for (card of vm.cards; track card.id) {
+          <div class="bank-card-wrapper card-box">
+            <div
+              class="visual-card"
+              [style.background]="card.colorGradient"
+              [class.blocked]="card.isBlocked"
+            >
+              <div class="visual-card-top">
+                <span class="card-name">{{ card.name }}</span>
+                <span class="card-system">{{ card.paymentSystem }}</span>
+              </div>
+
+              <div class="card-chip"></div>
+
+              <div class="visual-card-number">
+                {{ revealedCardIds.has(card.id) ? card.fullNumber : card.maskedNumber }}
+              </div>
+
+              <div class="visual-card-bottom">
+                <div>
+                  <small>Срок действия</small>
+                  <div>{{ card.expiry }}</div>
+                </div>
+                <span
+                  class="status-pill"
+                  [class.status-blocked]="card.isBlocked"
+                >
+                  {{ card.isBlocked ? 'Заблокирована' : 'Активна' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Привязанный счёт -->
+            @if (getAccount(vm.accounts, card.accountId); as linkedAcc) {
+              <div class="linked-account-info" [class.frozen-box]="card.isBlocked">
+                <span class="linked-label">
+                  Счёт: <strong>{{ linkedAcc.name }}</strong>
+                </span>
+                @if (card.isBlocked) {
+                  <span class="linked-balance frozen-text">
+                    0,00 ₽ <small>(заморожено {{ linkedAcc.balance | number:'1.2-2' }} ₽)</small>
+                  </span>
+                } @else {
+                  <span class="linked-balance">
+                    {{ linkedAcc.balance | number:'1.2-2' }} ₽
+                  </span>
+                }
+              </div>
+            }
+
+            <div class="card-controls">
+              <button
+                type="button"
+                class="btn btn-outline btn-sm"
+                (click)="toggleRevealCard(card.id)"
+              >
+                {{ revealedCardIds.has(card.id) ? 'Скрыть номер' : 'Показать номер' }}
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm"
+                [class.btn-danger-soft]="!card.isBlocked"
+                [class.btn-secondary]="card.isBlocked"
+                (click)="onToggleBlock(card.id)"
+              >
+                {{ card.isBlocked ? 'Разблокировать' : 'Заблокировать' }}
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Счета и последние операции -->
+    <div class="two-columns">
+      <section class="card-box">
+        <div class="section-header">
+          <h2>Открытые счета</h2>
+        </div>
+
+        <div class="accounts-list">
+          @for (acc of vm.accounts; track acc.id) {
+            <div class="account-item" [class.frozen-box]="isAccountFrozen(vm.cards, acc.id)">
+              <div class="account-info">
+                <div class="account-title-row">
+                  <strong>{{ acc.name }}</strong>
+                  <span class="badge badge-neutral">
+                    {{ acc.type === 'debit' ? 'Текущий' : 'Накопительный' }}
+                  </span>
+                  @if (isAccountFrozen(vm.cards, acc.id)) {
+                    <span class="badge badge-danger">Заморожен</span>
+                  }
+                </div>
+                <div class="account-number">
+                  № {{ acc.accountNumber }}
+                  <button
+                    type="button"
+                    class="copy-btn"
+                    (click)="copyAccountNumber(acc.id, acc.accountNumber)"
+                  >
+                    {{ copiedAccountId === acc.id ? 'Скопировано ✓' : 'Копировать' }}
+                  </button>
+                </div>
+
+                <!-- Привязанные карты -->
+                <div class="linked-cards">
+                  @for (c of getCardsByAccount(vm.cards, acc.id); track c.id) {
+                    <span class="card-tag" [class.card-tag-blocked]="c.isBlocked">
+                      💳 {{ c.paymentSystem }} {{ c.maskedNumber }}
+                      {{ c.isBlocked ? '(забл.)' : '' }}
+                    </span>
+                  } @empty {
+                    <span class="no-cards">Карты к счёту не привязаны</span>
+                  }
+                </div>
+              </div>
+
+              <div class="account-balance-col">
+                @if (isAccountFrozen(vm.cards, acc.id)) {
+                  <div class="account-balance frozen-text">0,00 ₽</div>
+                  <div class="frozen-sub">на счёте {{ acc.balance | number:'1.2-2' }} ₽</div>
+                } @else {
+                  <div class="account-balance">{{ acc.balance | number:'1.2-2' }} ₽</div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="card-box">
+        <div class="section-header">
+          <h2>Последние операции</h2>
+          <a routerLink="/history" class="link-all">Вся история →</a>
+        </div>
+
+        <div class="tx-list">
+          @for (tx of vm.recentTransactions; track tx.id) {
+            <div class="tx-item">
+              <div class="tx-left">
+                <div class="tx-title">{{ tx.title }}</div>
+                <div class="tx-meta">
+                  {{ tx.category }} • {{ tx.date | date:'dd MMM, HH:mm' }}
+                </div>
+              </div>
+              <div
+                class="tx-amount"
+                [class.income]="tx.type === 'income'"
+              >
+                {{ tx.type === 'income' ? '+' : '−' }}{{ tx.amount | number:'1.2-2' }} ₽
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+    </div>
+  </div>
+}
